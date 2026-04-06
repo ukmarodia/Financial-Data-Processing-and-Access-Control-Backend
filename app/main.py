@@ -24,7 +24,16 @@ app = FastAPI(
     title="Finance Dashboard Backend",
     description=(
         "A role-based financial record management API. "
-        "Supports JWT authentication, RBAC, CRUD records, and dashboard analytics."
+        "Supports JWT authentication, RBAC, CRUD records, and dashboard analytics.\n\n"
+        "## Demo Login Credentials\n"
+        "- Admin: `admin@zovryn.org` / `adminpass`\n"
+        "- Analyst: `analyst@zovryn.org` / `analystpass`\n"
+        "- Viewer: `viewer@zovryn.org` / `viewerpass`\n\n"
+        "## How To Authorize In Swagger\n"
+        "1. Click **Authorize** in the top-right.\n"
+        "2. Enter email in **username** and your password in **password**.\n"
+        "3. Leave `client_id` and `client_secret` empty.\n"
+        "4. Click **Authorize**, then **Close**."
     ),
     version="1.0.0",
     contact={"name": "API Support"},
