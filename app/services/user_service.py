@@ -5,7 +5,7 @@ from app.exceptions import NotFoundError, BadRequestError
 
 
 class UserService:
-    """Logic for managing users (admin only operations)."""
+   
 
     @staticmethod
     def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:

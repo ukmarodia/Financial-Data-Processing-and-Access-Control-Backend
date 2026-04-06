@@ -13,13 +13,8 @@ from app.exceptions import NotFoundError, ForbiddenError
 class RecordService:
     @staticmethod
     def _apply_visibility(query, user: User):
-        """
-        Admins and Analysts can see all records.
-        Viewers can only see their own records.
-        (This handles the ownership requirement).
-        """
         if user.role == UserRole.VIEWER:
-            return query.filter(FinancialRecord.created_by == user.id)
+            raise ForbiddenError("Viewers are not allowed to access records")
         return query
 
     @staticmethod
@@ -34,15 +29,15 @@ class RecordService:
         page: int = 1,
         per_page: int = 20
     ) -> PaginatedRecords:
-        """Fetch paginated, filtered records, respecting soft deletes and visibility."""
+       
         
-        # Base query: exclude soft deleted
+       
         query = db.query(FinancialRecord).filter(FinancialRecord.is_deleted == False)
 
-        # Apply visibility scoping based on role
+        
         query = RecordService._apply_visibility(query, current_user)
 
-        # Apply Optional Filters
+       
         if type:
             query = query.filter(FinancialRecord.type == type)
         if category:
@@ -60,10 +55,10 @@ class RecordService:
                 )
             )
 
-        # Count total before paginating
+       
         total = query.count()
 
-        # Paginate
+       
         records = query.order_by(desc(FinancialRecord.date)).offset((page - 1) * per_page).limit(per_page).all()
 
         pages = (total + per_page - 1) // per_page
@@ -78,6 +73,9 @@ class RecordService:
 
     @staticmethod
     def get_record(db: Session, current_user: User, record_id: int) -> FinancialRecord:
+        if current_user.role == UserRole.VIEWER:
+            raise ForbiddenError("Viewers are not allowed to access records")
+
         record = db.query(FinancialRecord).filter(
             FinancialRecord.id == record_id,
             FinancialRecord.is_deleted == False
@@ -86,10 +84,6 @@ class RecordService:
         if not record:
             raise NotFoundError("Financial record not found")
 
-        # Viewers can only view their own items
-        if current_user.role == UserRole.VIEWER and record.created_by != current_user.id:
-            raise ForbiddenError("You can only view your own records")
-            
         return record
 
     @staticmethod
@@ -105,7 +99,7 @@ class RecordService:
 
     @staticmethod
     def update_record(db: Session, current_user: User, record_id: int, req: RecordUpdate) -> FinancialRecord:
-        # Note: only Admins should route here (checked at API layer)
+       
         record = RecordService.get_record(db, current_user, record_id)
         
         update_data = req.model_dump(exclude_unset=True)
@@ -118,7 +112,7 @@ class RecordService:
 
     @staticmethod
     def delete_record(db: Session, current_user: User, record_id: int):
-        # Note: only Admins should route here (checked at API layer)
+       
         record = RecordService.get_record(db, current_user, record_id)
         record.is_deleted = True # Soft delete
         db.commit()

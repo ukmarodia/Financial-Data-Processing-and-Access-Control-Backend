@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class SummaryResponse(BaseModel):
-    """High-level financial overview for the dashboard."""
+    
     total_income: float
     total_expenses: float
     net_balance: float

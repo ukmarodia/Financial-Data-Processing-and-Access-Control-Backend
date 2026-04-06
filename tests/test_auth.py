@@ -1,10 +1,8 @@
-"""
-Tests for authentication endpoints: registration, login, duplicate detection, bad credentials.
-"""
+
 
 
 def test_register_user(client):
-    """Successful registration returns the user profile with default Viewer role."""
+   
     response = client.post(
         "/api/auth/register",
         json={"email": "test@domain.com", "full_name": "Test User", "password": "securepass"}
@@ -12,13 +10,13 @@ def test_register_user(client):
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "test@domain.com"
-    assert data["role"] == "viewer"  # All registrations default to viewer
+    assert data["role"] == "viewer"  
     assert "id" in data
-    assert "hashed_password" not in data  # Password must never be exposed
+    assert "hashed_password" not in data  
 
 
 def test_register_duplicate_email(client):
-    """Registering with an already-used email returns 400 with a clear error."""
+   
     payload = {"email": "test@domain.com", "full_name": "Test User", "password": "securepass"}
     client.post("/api/auth/register", json=payload)
 
@@ -28,7 +26,7 @@ def test_register_duplicate_email(client):
 
 
 def test_register_invalid_email_format(client):
-    """Pydantic should reject a badly formatted email before it hits the DB."""
+    
     response = client.post(
         "/api/auth/register",
         json={"email": "not-an-email", "full_name": "Test", "password": "securepass"}
@@ -37,7 +35,7 @@ def test_register_invalid_email_format(client):
 
 
 def test_register_password_too_short(client):
-    """Passwords shorter than 6 characters should be rejected."""
+    
     response = client.post(
         "/api/auth/register",
         json={"email": "test@domain.com", "full_name": "Test", "password": "abc"}
@@ -46,7 +44,7 @@ def test_register_password_too_short(client):
 
 
 def test_login_success(client):
-    """Successful login returns a bearer token."""
+   
     client.post(
         "/api/auth/register",
         json={"email": "test@domain.com", "full_name": "Test", "password": "securepass"}
@@ -63,7 +61,7 @@ def test_login_success(client):
 
 
 def test_login_wrong_password(client):
-    """Wrong password returns 401 with a consistent error message."""
+   
     client.post(
         "/api/auth/register",
         json={"email": "test@domain.com", "full_name": "Test", "password": "securepass"}
@@ -79,7 +77,7 @@ def test_login_wrong_password(client):
 
 
 def test_login_nonexistent_user(client):
-    """Login with an email that doesn't exist returns 401 (not 404, to prevent enumeration)."""
+   
     response = client.post(
         "/api/auth/login",
         data={"username": "nobody@domain.com", "password": "securepass"}
@@ -88,7 +86,7 @@ def test_login_nonexistent_user(client):
 
 
 def test_me_endpoint_returns_own_profile(client):
-    """GET /auth/me returns the authenticated user's profile."""
+   
     client.post(
         "/api/auth/register",
         json={"email": "test@domain.com", "full_name": "Test User", "password": "securepass"}

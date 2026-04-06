@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 from app.database import Base, get_db
 from app.main import app
 
-# Setup an in-memory SQLite database specifically for testing
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
@@ -19,7 +19,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Create a fresh database for each test function."""
+    
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -30,10 +30,7 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """
-    Provide a TestClient that uses our test DB session.
-    Overrides the get_db dependency.
-    """
+   
     def override_get_db():
         try:
             yield db_session

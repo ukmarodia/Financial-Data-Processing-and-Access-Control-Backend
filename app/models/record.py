@@ -24,13 +24,13 @@ class FinancialRecord(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # who created this record — links back to the User table
+   
     created_by: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
     creator: Mapped["User"] = relationship("User", back_populates="records")
 
-    # soft delete: financial records should never truly disappear
+   #soft delete 
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(

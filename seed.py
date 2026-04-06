@@ -17,9 +17,9 @@ def seed_db():
     try:
         print("Creating users...")
         users_data = [
-            ("admin@zovryn.com", "Admin User", "adminpass", UserRole.ADMIN),
-            ("analyst@zovryn.com", "Analyst User", "analystpass", UserRole.ANALYST),
-            ("viewer@zovryn.com", "Viewer User", "viewerpass", UserRole.VIEWER),
+            ("admin@zovryn.org", "Admin User", "adminpass", UserRole.ADMIN),
+            ("analyst@zovryn.org", "Analyst User", "analystpass", UserRole.ANALYST),
+            ("viewer@zovryn.org", "Viewer User", "viewerpass", UserRole.VIEWER),
         ]
         
         seeded_users = []
@@ -39,7 +39,7 @@ def seed_db():
         admin_id = seeded_users[0].id
         
         records = []
-        # Generate 100 random records over the past 12 months
+        
         for _ in range(100):
             record_type = random.choices([RecordType.INCOME, RecordType.EXPENSE], weights=[0.3, 0.7])[0]
             
@@ -50,7 +50,7 @@ def seed_db():
                 cat = random.choice(categories_expense)
                 amt = round(random.uniform(10, 500), 2)
                 
-            # Random date within last 365 days
+           
             days_ago = random.randint(0, 365)
             record_date = (datetime.now() - timedelta(days=days_ago)).date()
             

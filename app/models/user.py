@@ -8,12 +8,7 @@ from app.database import Base
 
 
 class UserRole(str, enum.Enum):
-    """
-    Three-tier role system:
-    - viewer: can only read records (no dashboard analytics)
-    - analyst: can read records and access dashboard summaries
-    - admin: full access — CRUD on records, user management
-    """
+    
     VIEWER = "viewer"
     ANALYST = "analyst"
     ADMIN = "admin"
@@ -39,7 +34,7 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    # relationship to financial records this user created
+    
     records: Mapped[list["FinancialRecord"]] = relationship(
         "FinancialRecord", back_populates="creator"
     )

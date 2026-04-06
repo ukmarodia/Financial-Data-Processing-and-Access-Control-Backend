@@ -1,16 +1,10 @@
-"""
-Tests for financial record CRUD operations and RBAC enforcement.
 
-Design note: We avoid relying on hardcoded user IDs by querying the DB
-directly for user IDs after registration. This makes tests robust even
-if auto-increment behavior changes.
-"""
 from app.models.user import UserRole
 from app.services.user_service import UserService
 
 
 def _register_and_get_id(client, db_session, email, name, password, role=None) -> int:
-    """Helper: register a user and optionally bump their role. Returns their DB id."""
+    
     resp = client.post(
         "/api/auth/register",
         json={"email": email, "full_name": name, "password": password}
@@ -23,7 +17,7 @@ def _register_and_get_id(client, db_session, email, name, password, role=None) -
 
 
 def _get_token(client, email, password) -> dict:
-    """Helper: login and return Authorization headers."""
+   
     resp = client.post("/api/auth/login", data={"username": email, "password": password})
     assert resp.status_code == 200, f"Login failed: {resp.json()}"
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
@@ -66,13 +60,35 @@ def test_analyst_cannot_create_record(client, db_session):
     assert response.status_code == 403
 
 
+def test_viewer_cannot_list_records(client, db_session):
+    _register_and_get_id(client, db_session, "viewer@test.com", "Viewer", "viewerpass")
+    headers = _get_token(client, "viewer@test.com", "viewerpass")
+
+    response = client.get("/api/records", headers=headers)
+    assert response.status_code == 403
+
+
+def test_analyst_can_list_records(client, db_session):
+    _register_and_get_id(client, db_session, "admin@test.com", "Admin", "adminpass", UserRole.ADMIN)
+    _register_and_get_id(client, db_session, "analyst@test.com", "Analyst", "analystpass", UserRole.ANALYST)
+
+    admin_headers = _get_token(client, "admin@test.com", "adminpass")
+    analyst_headers = _get_token(client, "analyst@test.com", "analystpass")
+
+    client.post("/api/records", json=RECORD_PAYLOAD, headers=admin_headers)
+
+    response = client.get("/api/records", headers=analyst_headers)
+    assert response.status_code == 200
+    assert response.json()["total"] >= 1
+
+
 def test_record_validation_negative_amount(client, db_session):
     _register_and_get_id(client, db_session, "admin@test.com", "Admin", "adminpass", UserRole.ADMIN)
     headers = _get_token(client, "admin@test.com", "adminpass")
 
     bad_payload = {**RECORD_PAYLOAD, "amount": -100}
     response = client.post("/api/records", json=bad_payload, headers=headers)
-    assert response.status_code == 422  # Pydantic validation error
+    assert response.status_code == 422  
 
 
 def test_admin_can_update_record(client, db_session):
@@ -101,7 +117,7 @@ def test_admin_can_soft_delete_record(client, db_session):
     del_resp = client.delete(f"/api/records/{record_id}", headers=headers)
     assert del_resp.status_code == 204
 
-    # Verify record is gone from list (soft deleted)
+   
     list_resp = client.get("/api/records", headers=headers)
     ids_in_response = [r["id"] for r in list_resp.json()["items"]]
     assert record_id not in ids_in_response
@@ -111,7 +127,7 @@ def test_pagination_works(client, db_session):
     _register_and_get_id(client, db_session, "admin@test.com", "Admin", "adminpass", UserRole.ADMIN)
     headers = _get_token(client, "admin@test.com", "adminpass")
 
-    # Create 5 records
+   
     for i in range(5):
         client.post("/api/records", json={**RECORD_PAYLOAD, "category": f"category_{i}"}, headers=headers)
 

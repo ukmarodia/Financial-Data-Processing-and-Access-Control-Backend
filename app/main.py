@@ -1,19 +1,16 @@
-import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 
-# Models must be imported before create_all() so SQLAlchemy discovers their table definitions.
-# Explicit imports here guarantee all tables are registered with the metadata.
 import app.models.user  # noqa: F401
 import app.models.record  # noqa: F401
 
 from app.api.routes import auth, users, records, dashboard
 from app.exceptions import NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError
 
-# Create all tables at startup (idempotent — skips tables that already exist)
+
 Base.metadata.create_all(bind=engine)
 
 tags_metadata = [
@@ -34,7 +31,7 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
-# CORS — allows any frontend origin in development
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,9 +41,7 @@ app.add_middleware(
 )
 
 
-# --- Global Exception Handlers ---
-# Converts our custom domain exceptions into consistent JSON error responses.
-# Every error body has: {"error_code": "...", "detail": "..."}
+
 
 @app.exception_handler(NotFoundError)
 @app.exception_handler(ForbiddenError)
@@ -60,7 +55,7 @@ async def custom_http_exception_handler(request: Request, exc):
     )
 
 
-# --- Routers ---
+
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(records.router, prefix="/api")
@@ -71,14 +66,3 @@ app.include_router(dashboard.router, prefix="/api")
 def health_check():
     """Simple liveness check — useful for uptime monitoring."""
     return {"status": "ok", "message": "Finance API is running"}
-
-
-@app.on_event("startup")
-def on_startup():
-    if os.environ.get("VERCEL"):
-        print("Vercel environment detected. Seeding ephemeral SQLite database.")
-        try:
-            import seed
-            seed.main()
-        except Exception as e:
-            print(f"Error seeding database: {e}")

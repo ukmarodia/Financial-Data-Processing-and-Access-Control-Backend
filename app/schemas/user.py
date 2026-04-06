@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from app.models.user import UserRole
 
 
 class UserResponse(BaseModel):
-    """What we return when someone asks for user info. Never includes password."""
+   
     id: int
-    email: str
+    email: EmailStr
     full_name: str
     role: UserRole
     is_active: bool
@@ -19,10 +19,10 @@ class UserResponse(BaseModel):
 
 
 class UserRoleUpdate(BaseModel):
-    """Admin changes a user's role."""
+   
     role: UserRole
 
 
 class UserStatusUpdate(BaseModel):
-    """Admin activates/deactivates a user."""
+   
     is_active: bool

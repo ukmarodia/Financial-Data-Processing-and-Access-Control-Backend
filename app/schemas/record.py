@@ -7,7 +7,7 @@ from app.models.record import RecordType
 
 
 class RecordCreate(BaseModel):
-    """Payload for creating a new financial record."""
+   
     amount: float
     type: RecordType
     category: str
@@ -43,7 +43,7 @@ class RecordCreate(BaseModel):
 
 
 class RecordUpdate(BaseModel):
-    """Payload for updating a record. All fields optional — only send what changed."""
+   
     amount: Optional[float] = None
     type: Optional[RecordType] = None
     category: Optional[str] = None
@@ -81,7 +81,7 @@ class RecordUpdate(BaseModel):
 
 
 class RecordResponse(BaseModel):
-    """What we send back when returning a financial record."""
+   
     id: int
     amount: float
     type: RecordType
@@ -96,7 +96,7 @@ class RecordResponse(BaseModel):
 
 
 class PaginatedRecords(BaseModel):
-    """Paginated list response — includes metadata so the frontend knows total pages."""
+  
     items: list[RecordResponse]
     total: int
     page: int

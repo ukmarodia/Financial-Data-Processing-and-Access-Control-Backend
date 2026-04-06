@@ -25,13 +25,9 @@ def list_records(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.ANALYST))
 ):
-    """
-    List records. 
-    Viewers see only their own. Analysts and Admins see all.
-    Supports filtering and pagination.
-    """
+   
     return RecordService.get_records(
         db, current_user, type, category, date_from, date_to, q, page, per_page
     )
@@ -41,9 +37,9 @@ def list_records(
 def get_record(
     record_id: int, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.ANALYST))
 ):
-    """Get a specific record. Viewers can only request their own."""
+    
     return RecordService.get_record(db, current_user, record_id)
 
 
@@ -53,7 +49,7 @@ def create_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN))
 ):
-    """Create a new financial record. Admin ONLY."""
+    
     return RecordService.create_record(db, current_user, req)
 
 
@@ -64,7 +60,7 @@ def update_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN))
 ):
-    """Update an existing record entirely or partially. Admin ONLY."""
+    
     return RecordService.update_record(db, current_user, record_id, req)
 
 
@@ -74,5 +70,5 @@ def delete_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN))
 ):
-    """Soft delete a record. Admin ONLY."""
+    
     RecordService.delete_record(db, current_user, record_id)

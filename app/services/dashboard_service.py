@@ -10,16 +10,15 @@ from app.schemas.dashboard import (
 
 
 class DashboardService:
-    """Aggregates data for the frontend dashboard. (Admin/Analyst only)"""
-
+   
     @staticmethod
     def _base_query(db: Session):
-        """Helper to exclude soft-deleted records globally for dashboards."""
+       
         return db.query(FinancialRecord).filter(FinancialRecord.is_deleted == False)
 
     @staticmethod
     def get_summary(db: Session) -> SummaryResponse:
-        """Calculates total income, total expense, and net balance."""
+       
 
         income_sum = DashboardService._base_query(db).filter(
             FinancialRecord.type == RecordType.INCOME
@@ -40,7 +39,7 @@ class DashboardService:
 
     @staticmethod
     def get_category_breakdown(db: Session) -> CategoryBreakdownResponse:
-        """Groups totals by category, split by income and expense, ordered by largest first."""
+       
 
         def fetch_grouped(record_type: RecordType) -> list[CategoryTotal]:
             results = DashboardService._base_query(db).filter(
@@ -65,9 +64,9 @@ class DashboardService:
 
     @staticmethod
     def get_trends(db: Session) -> TrendsResponse:
-        """Returns monthly income/expense for the trailing 12 months (stdlib only, no dateutil)."""
+      
 
-        # Compute 12-month window start using only stdlib datetime
+       
         now = datetime.now()
         year = now.year
         month = now.month - 11
@@ -76,7 +75,7 @@ class DashboardService:
             year -= 1
         twelve_months_ago = datetime(year, month, 1).date()
 
-        # SQLAlchemy 2.x compatible case() — uses positional tuple, not keyword dict
+        
         results = DashboardService._base_query(db).filter(
             FinancialRecord.date >= twelve_months_ago
         ).with_entities(
@@ -109,7 +108,7 @@ class DashboardService:
 
     @staticmethod
     def get_recent_activity(db: Session, limit: int = 10) -> list[FinancialRecord]:
-        """Returns the most recent N transactions ordered by date then creation time."""
+       
         return DashboardService._base_query(db).order_by(
             FinancialRecord.date.desc(),
             FinancialRecord.created_at.desc()
