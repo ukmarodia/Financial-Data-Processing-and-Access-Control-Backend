@@ -10,7 +10,7 @@ Supports role-based access control, financial record management, and summary-lev
 | Layer | Choice | Reason |
 |---|---|---|
 | Framework | FastAPI | Fast, async-ready, auto-generates OpenAPI docs |
-| ORM | SQLAlchemy 2.x | Type-safe, swap-to-Postgres ready |
+| ORM | SQLAlchemy 2.x | Makes easy to migrate to any databases like mysql|
 | Database | SQLite | Zero-setup for reviewers; production-swap requires one config line |
 | Auth | JWT (python-jose + passlib/bcrypt) | Stateless, industry standard |
 | Validation | Pydantic v2 | Strict type checking, clear error messages |
@@ -48,15 +48,13 @@ graph TD
 
 ```bash
 pip install -r requirements.txt
-python seed.py          # Populate DB with test users + 100 sample records
+python seed.py          # Populates db with test users and data
 uvicorn app.main:app --reload
 ```
 
 Then open **http://localhost:8000/docs** for interactive Swagger UI.
 
-> **Note (Windows):** If `pip` isn't found, try `python -m pip install -r requirements.txt`.
-
-### Seed Accounts
+### Test accounts
 
 | Role | Email | Password |
 |---|---|---|
@@ -72,37 +70,37 @@ Use the **Authorize** button in Swagger UI → log in with any account above →
 
 ```
 app/
-├── main.py              # App factory, middleware, exception handlers
-├── config.py            # Settings loaded from .env
-├── database.py          # SQLAlchemy engine, session, Base
-├── exceptions.py        # Domain exceptions (NotFoundError, ForbiddenError, etc.)
+├── main.py              
+├── config.py            
+├── database.py          
+├── exceptions.py       
 ├── models/
-│   ├── user.py          # User model + UserRole enum
-│   └── record.py        # FinancialRecord model + RecordType enum
+│   ├── user.py          
+│   └── record.py        
 ├── schemas/
-│   ├── auth.py          # Login/Register/Token Pydantic schemas
-│   ├── user.py          # User response + update schemas
-│   ├── record.py        # Record create/update/response + pagination schema
-│   └── dashboard.py     # Summary, breakdown, and trend response schemas
+│   ├── auth.py          
+│   ├── user.py          
+│   ├── record.py        
+│   └── dashboard.py     
 ├── services/
-│   ├── auth_service.py      # Registration, login, token issuing
-│   ├── user_service.py      # User management (CRUD, role/status changes)
-│   ├── record_service.py    # Record CRUD, filtering, visibility scoping
-│   └── dashboard_service.py # Aggregation queries (summary, breakdown, trends)
+│   ├── auth_service.py     
+│   ├── user_service.py      
+│   ├── record_service.py    
+│   └── dashboard_service.py 
 ├── api/
-│   ├── deps.py              # get_current_user, require_role() dependency
+│   ├── deps.py              
 │   └── routes/
-│       ├── auth.py          # POST /api/auth/register, /login, GET /api/auth/me
-│       ├── users.py         # GET/PATCH /api/users (Admin only)
-│       ├── records.py       # CRUD /api/records
-│       └── dashboard.py     # GET /api/dashboard/* (Admin + Analyst)
+│       ├── auth.py          
+│       ├── users.py         
+│       ├── records.py       
+│       └── dashboard.py     
 ├── utils/
-│   └── security.py          # bcrypt hashing, JWT encode/decode
+│   └── security.py         
 tests/
-├── conftest.py          # Fixtures: in-memory DB, TestClient
-├── test_auth.py         # Registration, login, duplicate email, bad password
-├── test_records.py      # CRUD, RBAC, validation, soft delete, pagination
-└── test_dashboard.py    # Summary math, category grouping, access control
+├── conftest.py          
+├── test_auth.py         
+├── test_records.py     
+└── test_dashboard.py    
 ```
 
 ---
@@ -178,11 +176,11 @@ REST APIs are stateless. JWTs carry the user identity and role in the token itse
 
 ## Assumptions Made
 
-1. **Record ownership vs. visibility**: All records are global (not user-owned). Viewers see all records but cannot create/modify them. Analysts and Admins see all records. I considered viewer-owns-record scoping but the assignment said "Viewer can only view dashboard data" which implies read-only access to shared data, not private data.
+1. **Record ownership vs. visibility**: All records are global (not user-owned). Viewers see all records but cannot create/modify them. Analysts and Admins see all records. I considered viewer owns record scoping but the assignment said "Viewer can only view dashboard data" which implies read-only access to shared data, not private data.
 
 2. **First user is not auto-promoted to Admin**: All registrations default to Viewer for security. The seed script promotes specific accounts to Admin/Analyst. In production, an "initial setup" flow would handle this.
 
-3. **Soft delete is the only delete**: Admins cannot permanently purge records via the API. This is intentional — financial data integrity.
+3. **Soft delete is the only delete**: Admins cannot permanently purge records via the API. This is because financial data needs integrity.
 
 4. **No Alembic migrations**: `create_all()` at startup creates tables. For production, Alembic would handle incremental schema changes. Noted as an explicit tradeoff.
 
