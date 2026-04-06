@@ -51,7 +51,7 @@ class RecordService:
             query = query.filter(
                 or_(
                     FinancialRecord.category.ilike(f"%{q}%"),
-                    FinancialRecord.notes.ilike(f"%{q}%")
+                    FinancialRecord.description.ilike(f"%{q}%")
                 )
             )
 

@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 
-import app.models.user  # noqa: F401
-import app.models.record  # noqa: F401
+import app.models.user  
+import app.models.record 
 
 from app.api.routes import auth, users, records, dashboard
 from app.exceptions import NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError

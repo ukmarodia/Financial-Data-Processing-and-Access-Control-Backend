@@ -57,8 +57,9 @@ MAX_LOGIN_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 60
 
 def rate_limit_login(request: Request):
-   
+    """Rate limit login attempts: max 5 per minute per IP. Skip for test client."""
     if getattr(request.client, "host", None) == "testclient":
+        # Bypass rate limit for pytest TestClient to avoid blocking tests
         return
         
     ip = request.client.host if request.client else "unknown"
