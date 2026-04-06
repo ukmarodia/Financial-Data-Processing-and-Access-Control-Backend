@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings
 
 
@@ -9,7 +10,7 @@ class Settings(BaseSettings):
     """
 
     SECRET_KEY: str = "dev-secret-key-change-in-production"
-    DATABASE_URL: str = "sqlite:///./finance.db"
+    DATABASE_URL: str = "sqlite:////tmp/finance.db" if os.environ.get("VERCEL") else "sqlite:///./finance.db"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # JWT config

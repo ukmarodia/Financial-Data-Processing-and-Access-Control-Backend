@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,3 +71,14 @@ app.include_router(dashboard.router, prefix="/api")
 def health_check():
     """Simple liveness check — useful for uptime monitoring."""
     return {"status": "ok", "message": "Finance API is running"}
+
+
+@app.on_event("startup")
+def on_startup():
+    if os.environ.get("VERCEL"):
+        print("Vercel environment detected. Seeding ephemeral SQLite database.")
+        try:
+            import seed
+            seed.main()
+        except Exception as e:
+            print(f"Error seeding database: {e}")
